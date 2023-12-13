@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pokédex</title>
+    <script src="https://cdn.jsdelivr.net/npm/motizma/dist/motizma.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .dark-theme {
+            background-color: #333;
+            color: #fff;
+        }
+        .blue-theme {
+            background-color: #2196F3;
+            color: #fff;
+        }
+        #themes {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+        #themes button {
+            margin-right: 5px;
+            background-color: #ccc;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #darkTheme {
+            background-color: #333;
+            color: #fff;
+        }
+        #blueTheme {
+            background-color: #2196F3;
+            color: #fff;
+        }
+        h1 {
+            color: #e53935;
+        }
+        #pokemonList {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .pokemon-card {
+            margin: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .pokemon-card:hover {
+            background-color: #ffc107; /* Couleur de fond au survol */
+            color: #333; /* Couleur du texte au survol */
+        }
+        .dark-theme .pokemon-card {
+            background-color: #444;
+            color: #fff;
+        }
+        .blue-theme .pokemon-card {
+            background-color: #64B5F6;
+            color: #fff;
+        }
+        #pokemonDetails {
+            margin: 20px;
+            padding: 20px;
+            background-color: #ffecb3;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        img {
+            max-width: 100px;
+            max-height: 100px;
+        }
+        #searchBar {
+            margin: 20px;
+        }
+        #pokemonInfo {
+            color: #000; /* Texte de couleur noire */
+        }
+    </style>
+</head>
+<body>
+    <div id="themes">
+        <button id="darkTheme">Dark Theme</button>
+        <button id="blueTheme">Blue Theme</button>
+    </div>
+    <h1>Pokédex</h1>
+
+    <input type="text" id="searchBar" placeholder="Rechercher un Pokémon">
+
+    <div id="pokemonList">
+        <!-- Liste des Pokémon chargée via l'API PokeAPI -->
+    </div>
+
+    <div id="pokemonDetails">
+        <img id="pokemonImage" style="display: none; max-width: 200px; max-height: 200px;">
+        <p id="pokemonInfo" style="display: none;"></p>
+    </div>
+
+    <script>
+        // Fonction pour charger la liste des Pokémon depuis l'API PokeAPI
+        function loadPokemonList() {
+            fetch('https://pokeapi.co/api/v2/pokemon?limit=151')
+                .then(response => response.json())
+                .then(data => {
+                    const pokemonList = document.getElementById('pokemonList');
+                    const sortedPokemonNames = data.results.map(pokemon => pokemon.name).sort();
+                    sortedPokemonNames.forEach(pokemonName => {
+                        const card = document.createElement('div');
+                        card.textContent = pokemonName;
+                        card.classList.add('pokemon-card');
+                        card.addEventListener('click', () => selectPokemon(pokemonName));
+                        pokemonList.appendChild(card);
+                    });
+                });
+        }
+        
+
+        // Fonction pour charger les détails d'un Pokémon
+        function loadPokemonDetails(pokemonName) {
+            fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`)
+                .then(response => response.json())
+                .then(data => {
+                    const pokemonDetails = document.getElementById('pokemonDetails');
+                    const pokemonInfo = document.getElementById('pokemonInfo');
+                    const pokemonImage = document.getElementById('pokemonImage');
+                    pokemonInfo.style.display = 'block';
+                    pokemonInfo.textContent = `
+                        ${pokemonName}
+                        Height: ${data.height / 10} meters
+                        Weight: ${data.weight / 10} kilograms
+                        Abilities: ${data.abilities.map(ability => ability.ability.name).join(', ')}
+                    `;
+                    pokemonImage.style.display = 'block';
+                    pokemonImage.src = data.sprites.front_default; // Affiche l'image du Pokémon
+                });
+        }
+
+        // Fonction pour sélectionner un Pokémon
+        function selectPokemon(pokemonName) {
+            loadPokemonDetails(pokemonName);
+        }
+
+        // Fonction pour rechercher un Pokémon par nom
+        document.getElementById('searchBar').addEventListener('input', function() {
+            const searchQuery = this.value.toLowerCase();
+            const cards = document.querySelectorAll('.pokemon-card');
+            cards.forEach(card => {
+                const pokemonName = card.textContent.toLowerCase();
+                if (pokemonName.includes(searchQuery)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // Gestion des thèmes
+        const darkThemeButton = document.getElementById('darkTheme');
+        const blueThemeButton = document.getElementById('blueTheme');
+
+        darkThemeButton.addEventListener('click', () => setDarkTheme());
+        blueThemeButton.addEventListener('click', () => setBlueTheme());
+
+        function setDarkTheme() {
+            document.body.classList.remove('dark-theme'); // Correction de la faute de frappe
+            document.body.classList.add('dark-theme');
+        }
+
+        function setBlueTheme() {
+            document.body.classList.remove('dark-theme');
+            document.body.classList.add('blue-theme');
+        }
+
+        loadPokemonList(); // Chargement initial de la liste de Pokémon
+    </script>
+</body>
+</html>
